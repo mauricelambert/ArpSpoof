@@ -1,0 +1,54 @@
+Metadata-Version: 2.1
+Name: ArpSpoof
+Version: 0.0.1
+Summary: This package implement a ARP Spoofer (for MIM attack).
+Home-page: https://github.com/mauricelambert/ArpSpoof
+Author: Maurice Lambert
+Author-email: mauricelambert434@gmail.com
+License: UNKNOWN
+Description: # ArpSpoof
+        
+        ## Description
+        This package implement a ARP Spoofer (for MIM attack).
+        
+        ## Requirements
+        This package require :
+         - python3
+         - python3 Standard Library
+         - Scapy
+        
+        ## Installation
+        ```bash
+        pip install ArpSpoof
+        ```
+        
+        ## Examples
+        
+        ### Command lines
+        1. For python console:
+        ```bash
+        ArpSpoof 192.168.1.1 192.168.1.2
+        ArpSpoof -s 192.168.1.1 192.168.1.2
+        ```
+        
+        ### Python3
+        ```python
+        from ArpSpoof import SpooferARP
+        SpooferARP("192.168.1.1", "192.168.1.2").launch()
+        SpooferARP("192.168.1.1", "192.168.1.2", semi = True, inter = 2.5).launch()
+        ```
+        
+        ## Link
+        [Github Page](https://github.com/mauricelambert/ArpSpoof)
+        
+        ## Licence
+        Licensed under the [GPL, version 3](https://www.gnu.org/licenses/).
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3.8
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown

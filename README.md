@@ -17,7 +17,6 @@ pip install ArpSpoof
 ## Examples
 
 ### Command lines
-1. For python console:
 ```bash
 ArpSpoof 192.168.1.1 192.168.1.2
 ArpSpoof -s 192.168.1.1 192.168.1.2

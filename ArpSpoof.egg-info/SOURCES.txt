@@ -1,9 +1,8 @@
+ArpSpoof.py
 LICENSE.txt
 MANIFEST.in
 README.md
 setup.py
-ArpSpoof/ArpSpoof.py
-ArpSpoof/__init__.py
 ArpSpoof.egg-info/PKG-INFO
 ArpSpoof.egg-info/SOURCES.txt
 ArpSpoof.egg-info/dependency_links.txt

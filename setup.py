@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup(
     name="ArpSpoof",
-    version="1.0.0",
+    version="1.0.1",
     py_modules=["ArpSpoof"],
-    install_requires = ['scapy'],
+    install_requires=["scapy"],
     author="Maurice Lambert",
     author_email="mauricelambert434@gmail.com",
     maintainer="Maurice Lambert",
@@ -13,11 +13,11 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/mauricelambert/ArpSpoof",
-    project_urls = {
+    project_urls={
         "Documentation": "https://mauricelambert.github.io/info/python/security/ArpSpoof.html",
         "Executable": "https://mauricelambert.github.io/info/python/security/ArpSpoof.pyz",
     },
-    classifiers = [
+    classifiers=[
         "Programming Language :: Python",
         "Development Status :: 5 - Production/Stable",
         "Topic :: System :: Networking",
@@ -28,7 +28,7 @@ setup(
         "Operating System :: Microsoft :: Windows",
         "Operating System :: MacOS",
     ],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
     entry_points={
         "console_scripts": ["ArpSpoof = ArpSpoof:main"],
     },
@@ -41,7 +41,7 @@ setup(
         "MIM",
         "Security",
         "DoS",
-        "DenialOfService"
+        "DenialOfService",
     ],
     platforms=["Windows", "Linux", "MacOS"],
     license="GPL-3.0 License",

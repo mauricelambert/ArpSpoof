@@ -51,7 +51,7 @@ This package implements an ARP Spoofer for MIM
 [2021-12-01 22:13:06] CRITICAL (50) {__main__ - ArpSpoof.py:428} End of ARP spoofing. The ARP tables are restored.
 """
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -93,9 +93,6 @@ import scapy.interfaces
 import logging
 import socket
 import sys
-
-global logger
-logger: Logger = None
 
 
 def get_custom_logger() -> Logger:
@@ -374,13 +371,9 @@ def main() -> None:
     This function performs a arp spoofing from the command line.
     """
 
-    global logger
-    print(copyright)
-
     arguments = parse_args()
 
-    logger = get_custom_logger()
-    logger.level = logging.DEBUG if arguments.verbose else logging.WARNING
+    logger.setLevel(logging.DEBUG if arguments.verbose else logging.WARNING)
 
     logger.debug("Logging is configured.")
 
@@ -429,6 +422,9 @@ def main() -> None:
         spoofer.restore()
         logger.critical("End of ARP spoofing. The ARP tables are restored.")
 
+
+logger: Logger = get_custom_logger()
+print(copyright)
 
 if __name__ == "__main__":
     main()

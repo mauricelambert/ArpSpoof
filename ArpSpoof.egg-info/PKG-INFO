@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: ArpSpoof
-Version: 1.0.1
+Version: 1.0.2
 Summary: This package implements an ARP Spoofer for MIM (Man-In-the-Middle) or DoS (Denial of Service) attacks.
 Home-page: https://github.com/mauricelambert/ArpSpoof
 Author: Maurice Lambert

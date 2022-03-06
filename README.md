@@ -24,12 +24,18 @@ pip install ArpSpoof
 ### Command lines
 
 ```bash
-python3 -m ArpSpoof 172.16.10.1 172.16.0.33
-python3 ArpSpoof.pyz 172.16.10.1 172.16.0.33
-ArpSpoof -h
-ArpSpoof --help
-ArpSpoof 172.16.10.1 172.16.0.33
-ArpSpoof 172.16.10.1 172.16.0.33 -p -s -v -t 1 -i 172.16.10.
+python3 -m ArpSpoof -h                    # Use python module
+python3 ArpSpoof.pyz --help               # Use python executable
+
+ArpSpoof 127.0.0.1 127.0.0.2              # Use console script entry point
+ArpSpoof -v 127.0.0.1 127.0.0.2,127.0.0.5 # Spoof multiple targets (verbose mode)
+ArpSpoof 127.0.0.1 127.0.0.2-127.0.0.5    # Spoof range of targets
+ArpSpoof 127.0.0.1 127.0.0.0/29           # Spoof all network
+
+ArpSpoof 127.0.0.1 127.0.0.0/29 -s -t 1   # Semi (spoof only gateway IP for the targets, interval is 1 seconds)
+ArpSpoof 127.0.0.1 127.0.0.0/29 -i 127.0. # Use the loopback interface
+
+ArpSpoof 172.16.10.1 172.16.0.33 -p       # Passive mode
 ```
 
 ### Python3
@@ -43,8 +49,13 @@ spoofer.active_cache_poisonning()
 spoofer = SpooferARP('172.16.10.1', '172.16.0.35', conf.iface, False, 0.5)
 spoofer.passive_cache_poisonning(asynchronous=True)
 spoofer.run = False
-spoofer.sniffer.stop()  # only with asynchronous mode
-spoofer.restore()       # only with asynchronous mode
+spoofer.sniffer.stop()                                   # only with asynchronous mode
+spoofer.restore()                                        # only with asynchronous mode
+
+# Multiple targets
+spoofer = SpooferARP('127.0.0.1', '127.0.0.2,127.0.0.3') # Spoof multiple targets
+spoofer = SpooferARP('127.0.0.1', '127.0.0.2-127.0.0.5') # Spoof range of targets
+spoofer = SpooferARP('127.0.0.1', '127.0.0.0/30')        # Spoof all network
 ```
 
 ## Links

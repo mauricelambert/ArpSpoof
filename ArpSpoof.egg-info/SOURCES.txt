@@ -1,5 +1,8 @@
 ArpSpoof.py
+LICENSE.txt
+MANIFEST.in
 README.md
+requirements.txt
 setup.py
 ArpSpoof.egg-info/PKG-INFO
 ArpSpoof.egg-info/SOURCES.txt

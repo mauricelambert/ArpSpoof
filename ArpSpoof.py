@@ -220,7 +220,7 @@ under certain conditions.
 [2022-06-22 11:12:20] WARNING  (30) {__main__ - ArpSpoof.py:572} End of ARP spoofing. Restore ARP table...
 """
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"

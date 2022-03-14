@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="ArpSpoof",
-    version="1.1.1",
+    version="1.1.2",
     py_modules=["ArpSpoof"],
     install_requires=["scapy", "PythonToolsKit"],
     author="Maurice Lambert",
